@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدعم الفني</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #0073e6;
+            color: white;
+            padding: 15px;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px gray;
+            border-radius: 10px;
+        }
+        .contact-form, .login-form, .tickets-section, .chat-room {
+            margin-top: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #0073e6;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .ticket, .room {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background: #fff;
+            border-radius: 5px;
+        }
+    </style>
+    <script>
+        var rooms = [];
+        var roomCounter = 1;
+        var currentUser = "";
+
+        function login() {
+            var code = document.getElementById("accessCode").value;
+            if (code === "1111") {
+                alert("تم تسجيل دخول الدعم الفني بنجاح!");
+                currentUser = "support";
+                document.getElementById("supportSection").style.display = "block";
+                document.getElementById("loginSection").style.display = "none";
+                displayRooms();
+            } else if (code === "2222") {
+                alert("تم تسجيل دخول العميل بنجاح!");
+                currentUser = "client";
+                document.getElementById("clientSection").style.display = "block";
+                document.getElementById("loginSection").style.display = "none";
+                displayClientRooms();
+            } else {
+                alert("رمز الدخول غير صحيح!");
+            }
+        }
+        
+        function submitTicket() {
+            var name = document.getElementById("clientName").value;
+            var email = document.getElementById("clientEmail").value;
+            var message = document.getElementById("clientMessage").value;
+            
+            if (name && email && message) {
+                var roomId = "#" + roomCounter++;
+                rooms.push({ id: roomId, name: name, email: email, messages: [{ sender: name, text: message }] });
+                alert("تم الإرسال بنجاح! تم إنشاء غرفة جديدة: " + roomId);
+                displayClientRooms();
+            } else {
+                alert("يرجى ملء جميع الحقول!");
+            }
+        }
+        
+        function displayRooms() {
+            var roomsContainer = document.getElementById("roomsList");
+            roomsContainer.innerHTML = "";
+            rooms.forEach(room => {
+                roomsContainer.innerHTML += `<div class='room'>
+                    <p><strong>الغرفة:</strong> ${room.id}</p>
+                    <p><strong>الاسم:</strong> ${room.name}</p>
+                    <p><strong>البريد:</strong> ${room.email}</p>
+                    <button onclick='openRoom("${room.id}")'>فتح الغرفة</button>
+                </div>`;
+            });
+        }
+        
+        function displayClientRooms() {
+            var clientRoomsContainer = document.getElementById("clientRoomsList");
+            clientRoomsContainer.innerHTML = "";
+            rooms.forEach(room => {
+                clientRoomsContainer.innerHTML += `<div class='room'>
+                    <p><strong>الغرفة:</strong> ${room.id}</p>
+                    <button onclick='openClientRoom("${room.id}")'>فتح الغرفة</button>
+                </div>`;
+            });
+        }
+        
+        function openRoom(roomId) {
+            var room = rooms.find(r => r.id === roomId);
+            if (room) {
+                document.getElementById("supportSection").style.display = "none";
+                document.getElementById("chatRoomSection").style.display = "block";
+                document.getElementById("chatRoomTitle").innerText = "غرفة: " + room.id;
+                displayChat(room);
+            }
+        }
+        
+        function openClientRoom(roomId) {
+            var room = rooms.find(r => r.id === roomId);
+            if (room) {
+                document.getElementById("clientSection").style.display = "none";
+                document.getElementById("clientChatSection").style.display = "block";
+                document.getElementById("clientChatRoomTitle").innerText = "غرفة: " + room.id;
+                displayChat(room);
+            }
+        }
+        
+        function displayChat(room) {
+            var chatContainer = document.getElementById("chatMessages");
+            chatContainer.innerHTML = "";
+            room.messages.forEach(msg => {
+                chatContainer.innerHTML += `<p><strong>${msg.sender}:</strong> ${msg.text}</p>`;
+            });
+        }
+        
+        function sendMessage() {
+            var message = document.getElementById("chatInput").value;
+            var roomId = document.getElementById("chatRoomTitle").innerText.split(": ")[1];
+            var room = rooms.find(r => r.id === roomId);
+            if (message && room) {
+                room.messages.push({ sender: currentUser === "support" ? "الدعم الفني" : "العميل", text: message });
+                displayChat(room);
+                document.getElementById("chatInput").value = "";
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>مرحبًا بك في الدعم الفني</h1>
+    </header>
+    <div class="container" id="loginSection">
+        <h2>تسجيل الدخول</h2>
+        <input type="password" id="accessCode" placeholder="أدخل رمز الدخول" required>
+        <button onclick="login()">تسجيل الدخول</button>
+    </div>
+    <div class="container" id="supportSection" style="display: none;">
+        <h2>لوحة الدعم الفني</h2>
+        <div id="roomsList" class="tickets-section"></div>
+    </div>
+    <div class="container" id="clientSection" style="display: none;">
+        <h2>غرف العملاء</h2>
+        <div id="clientRoomsList" class="tickets-section"></div>
+    </div>
+    <div class="container" id="chatRoomSection" style="display: none;">
+        <h2 id="chatRoomTitle"></h2>
+        <div id="chatMessages"></div>
+        <textarea id="chatInput" rows="3"></textarea>
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+</body>
+</html>
